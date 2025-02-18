@@ -15,11 +15,6 @@ The message is compared to stored questions using semantic similarity.
 If a close match is found, the corresponding answer is returned.
 If no match is found (console version only), the bot asks the user to teach it the correct response.
 Response Display: The chatbot returns the response to the user.
-Project Structure
-├── app.py          # Flask application for web interface
-├── main.py         # Chatbot logic (semantic search and learning)
-├── knowledge_base.json # JSON file storing questions and answers
-├── index.html      # Web interface for chat
 
 Installation and Setup
 Install dependencies:
