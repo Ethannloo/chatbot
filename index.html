@@ -1,72 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: auto;
-            padding: 20px;
-            text-align: center;
-        }
-        #chatbox {
-            height: 400px;
-            overflow-y: scroll;
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin-bottom: 20px;
-        }
-        #chatbox p {
-            margin: 5px 0;
-        }
-        .user {
-            text-align: right;
-            color: blue;
-        }
-        .bot {
-            text-align: left;
-            color: green;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Minimal Chatbot Front End</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #f5f5f5;
+    }
+    h1 {
+      text-align: center;
+    }
+    #chat-container {
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 20px;
+      height: 400px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+    }
+    .user-msg, .bot-msg {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+      max-width: 75%;
+    }
+    .user-msg {
+      background-color: #daf8cb;
+      align-self: flex-end;
+      margin-left: auto;
+    }
+    .bot-msg {
+      background-color: #e2e2e2;
+      align-self: flex-start;
+      margin-right: auto;
+    }
+    #input-area {
+      display: flex;
+      gap: 10px;
+    }
+    #user-input {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+    }
+    #send-btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    /* A little container for "teaching" new answers if needed */
+    #teach-container {
+      background-color: #fff;
+      border: 1px solid #ccc;
+      padding: 20px;
+      display: none; /* hidden until needed */
+    }
+    #teach-container input {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+    }
+  </style>
 </head>
 <body>
-    <h1>Chatbot</h1>
-    <div id="chatbox"></div>
-    <input type="text" id="userInput" placeholder="Type your message..." autofocus>
-    <button onclick="sendMessage()">Send</button>
+  <h1>My Minimal Chatbot</h1>
+  
+  <div id="chat-container" style="display: flex; flex-direction: column;"></div>
+  
+  <div id="input-area">
+    <input type="text" id="user-input" placeholder="Ask me anything..." />
+    <button id="send-btn">Send</button>
+  </div>
 
-    <script>
-        function sendMessage() {
-            const userInput = document.getElementById('userInput').value;
-            if (!userInput.trim()) return;
+  <div id="teach-container">
+    <p>I don't understand. Teach me the answer:</p>
+    <input type="text" id="teach-answer" placeholder="Type the correct answer..." />
+    <button id="teach-btn">Teach</button>
+  </div>
 
-            const chatbox = document.getElementById('chatbox');
-            const userMessage = document.createElement('p');
-            userMessage.className = 'user';
-            userMessage.textContent = `You: ${userInput}`;
-            chatbox.appendChild(userMessage);
+  <script>
+    const chatContainer = document.getElementById('chat-container');
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+    const teachContainer = document.getElementById('teach-container');
+    const teachAnswer = document.getElementById('teach-answer');
+    const teachBtn = document.getElementById('teach-btn');
 
-            fetch('/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ message: userInput }),
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    const botMessage = document.createElement('p');
-                    botMessage.className = 'bot';
-                    botMessage.textContent = `Bot: ${data.response}`;
-                    chatbox.appendChild(botMessage);
-                    chatbox.scrollTop = chatbox.scrollHeight;
-                });
+    let lastQuestion = '';
 
-            document.getElementById('userInput').value = '';
-        }
-    </script>
+    function appendMessage(text, sender = 'bot') {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = (sender === 'user') ? 'user-msg' : 'bot-msg';
+      msgDiv.innerText = text;
+      chatContainer.appendChild(msgDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const question = userInput.value.trim();
+      if(!question) return;
+      
+      appendMessage(question, 'user');
+      userInput.value = '';
+      teachContainer.style.display = 'none';
+
+      // Save this as our "last question"
+      lastQuestion = question;
+
+      // Send to backend
+      const response = await fetch('http://127.0.0.1:5000/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question })
+      });
+      const data = await response.json();
+
+      appendMessage(data.response, 'bot');
+
+      // If we need to teach the bot, show the teach container
+      if(data.needs_teaching) {
+        teachContainer.style.display = 'block';
+      }
+    }
+
+    async function teachBot() {
+      const answer = teachAnswer.value.trim();
+      if(!answer) return;
+      // Send to /teach
+      const response = await fetch('http://127.0.0.1:5000/teach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: lastQuestion,
+          answer: answer
+        })
+      });
+      const data = await response.json();
+      
+      appendMessage(data.response, 'bot');
+      teachAnswer.value = '';
+      teachContainer.style.display = 'none';
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    userInput.addEventListener('keypress', (e) => {
+      if(e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+    teachBtn.addEventListener('click', teachBot);
+  </script>
 </body>
 </html>
