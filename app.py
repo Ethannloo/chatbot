@@ -1,28 +1,32 @@
-from flask import Flask, request, jsonify
-from sentence_transformers import SentenceTransformer, util
-import json
 import os
+import json
+from typing import List, Optional, Dict
+
+from flask import Flask, request, jsonify
+from flask_cors import CORS  # Optional, if you need cross-origin access
+from sentence_transformers import SentenceTransformer, util
 
 app = Flask(__name__)
+CORS(app)  # Enable this if your front-end is on a different origin (localhost vs 127.0.0.1 etc.)
 
-# Load or create knowledge base
-def load_knowledge(file_path: str) -> dict:
+def load_knowledge(file_path: str) -> Dict:
     if not os.path.exists(file_path) or os.stat(file_path).st_size == 0:
         default_data = {"questions": []}
-        with open(file_path, "w") as file:
+        with open(file_path, "w", encoding="utf-8") as file:
             json.dump(default_data, file, indent=2)
         return default_data
-    with open(file_path, "r") as file:
+    
+    with open(file_path, "r", encoding="utf-8") as file:
         return json.load(file)
 
-def save_knowledge(file_path: str, data: dict):
-    with open(file_path, "w") as file:
+def save_knowledge(file_path: str, data: Dict) -> None:
+    with open(file_path, "w", encoding="utf-8") as file:
         json.dump(data, file, indent=2)
 
-def encode_questions(model, questions: list[str]):
+def encode_questions(model: SentenceTransformer, questions: List[str]):
     return model.encode(questions, convert_to_tensor=True)
 
-def find_best_match(user_question: str, questions: list[str], model):
+def find_best_match(user_question: str, questions: List[str], model: SentenceTransformer) -> Optional[str]:
     if not questions:
         return None
     user_embedding = model.encode(user_question, convert_to_tensor=True)
@@ -34,10 +38,11 @@ def find_best_match(user_question: str, questions: list[str], model):
         return questions[best_match_idx]
     return None
 
-def get_answer(question: str, knowledge_base: dict):
+def get_answer(question: str, knowledge_base: Dict) -> Optional[str]:
     for q in knowledge_base["questions"]:
         if q["question"] == question:
             return q["answer"]
+    return None
 
 # Initialize model and knowledge base at startup
 model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -49,21 +54,20 @@ def chat():
     data = request.get_json(force=True)
     user_input = data.get('question', '')
 
-    # If user enters "quit" – optional logic:
     if user_input.lower() == "quit":
-        return jsonify({"response": "Goodbye!"})
+        return jsonify({"response": "Goodbye!", "needs_teaching": False})
 
-    best_match = find_best_match(
-        user_input, [q["question"] for q in knowledge_base["questions"]], model
-    )
+    all_questions = [q["question"] for q in knowledge_base["questions"]]
+    best_match = find_best_match(user_input, all_questions, model)
 
     if best_match:
         answer = get_answer(best_match, knowledge_base)
-        return jsonify({"response": answer})
+        return jsonify({"response": answer or "Sorry, no answer found.", "needs_teaching": False})
     else:
-        # If no match is found, the bot doesn’t automatically add new Q/A
-        # but instructs the front end to show a "teach me" prompt if desired
-        return jsonify({"response": "I don't understand. Can you teach me?", "needs_teaching": True})
+        return jsonify({
+            "response": "I don't understand. Can you teach me?",
+            "needs_teaching": True
+        })
 
 @app.route('/teach', methods=['POST'])
 def teach():
@@ -76,7 +80,10 @@ def teach():
     save_knowledge('knowledge_base.json', knowledge_base)
     return jsonify({"response": "Got it. Thanks for teaching me!"})
 
-
 if __name__ == '__main__':
-    # Run on http://127.0.0.1:5000 by default
+    # If running in a standard environment with __file__ defined
+    if '__file__' in globals():
+        os.chdir(os.path.dirname(__file__))
+
+    # Flask will run on http://127.0.0.1:5000 by default
     app.run(debug=True)
