@@ -91,7 +91,6 @@ def chat_bot() -> None:
 
 if __name__ == '__main__':
     # Ensure the working directory is the script's location
-    # (This can cause errors if __file__ is not defined in some IDEs/notebooks)
     if '__file__' in globals():
         os.chdir(os.path.dirname(__file__))
 
