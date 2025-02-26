@@ -7,8 +7,7 @@ from flask_cors import CORS  # Optional, if you need cross-origin access
 from sentence_transformers import SentenceTransformer, util
 
 app = Flask(__name__)
-CORS(app)  # Enable this if your front-end is on a different origin (localhost vs 127.0.0.1 etc.)
-
+CORS(app)  
 def load_knowledge(file_path: str) -> Dict:
     if not os.path.exists(file_path) or os.stat(file_path).st_size == 0:
         default_data = {"questions": []}
@@ -85,5 +84,4 @@ if __name__ == '__main__':
     if '__file__' in globals():
         os.chdir(os.path.dirname(__file__))
 
-    # Flask will run on http://127.0.0.1:5000 by default
     app.run(debug=True)
