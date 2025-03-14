@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Ethan's Chatbot</title>
   
-  <!-- Google Fonts for a clean look -->
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -13,7 +13,7 @@
   />
 
   <style>
-    /* Global Styles */
+
     * {
       box-sizing: border-box;
     }
@@ -204,11 +204,9 @@
       userInput.value = '';
       teachContainer.style.display = 'none';
 
-      // Save this as our "last question"
       lastQuestion = question;
 
-      // Send to backend
-      const response = await fetch('http://127.0.0.1:5000/chat', {
+      const response = await fetch('/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question })
@@ -217,7 +215,6 @@
 
       appendMessage(data.response, 'bot');
 
-      // If we need to teach the bot, show the teach container
       if (data.needs_teaching) {
         teachContainer.style.display = 'block';
       }
@@ -228,7 +225,7 @@
       if (!answer) return;
 
       // Send to /teach
-      const response = await fetch('http://127.0.0.1:5000/teach', {
+      const response = await fetch('/teach', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -253,4 +250,3 @@
   </script>
 </body>
 </html>
-
