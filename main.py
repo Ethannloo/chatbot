@@ -53,7 +53,6 @@ def get_answer(question: str, knowledge_base: Dict) -> Optional[str]:
 
 
 def chat_bot() -> None:
-    # Load the pre-trained SentenceTransformer model
     model = SentenceTransformer('all-MiniLM-L6-v2')
 
     try:
@@ -69,7 +68,6 @@ def chat_bot() -> None:
             print("Bot: Goodbye!")
             break
 
-        # Extract all questions from knowledge base
         all_questions = [q["question"] for q in knowledge_base["questions"]]
         best_match = find_best_match(user_input, all_questions, model)
 
@@ -90,9 +88,7 @@ def chat_bot() -> None:
 
 
 if __name__ == '__main__':
-    # Ensure the working directory is the script's location
     if '__file__' in globals():
         os.chdir(os.path.dirname(__file__))
 
     chat_bot()
-
