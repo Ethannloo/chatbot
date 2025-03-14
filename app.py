@@ -2,13 +2,18 @@ import os
 import json
 from typing import List, Optional, Dict
 
-from flask import Flask, request, jsonify
-from flask_cors import CORS  # Optional, if you need cross-origin access
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS  
 from sentence_transformers import SentenceTransformer, util
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='.', static_url_path='')  
 CORS(app)  
+
+
 def load_knowledge(file_path: str) -> Dict:
+    """
+    Loads or creates a default knowledge base JSON file.
+    """
     if not os.path.exists(file_path) or os.stat(file_path).st_size == 0:
         default_data = {"questions": []}
         with open(file_path, "w", encoding="utf-8") as file:
@@ -19,6 +24,9 @@ def load_knowledge(file_path: str) -> Dict:
         return json.load(file)
 
 def save_knowledge(file_path: str, data: Dict) -> None:
+    """
+    Saves the knowledge base dictionary to the JSON file.
+    """
     with open(file_path, "w", encoding="utf-8") as file:
         json.dump(data, file, indent=2)
 
@@ -33,6 +41,7 @@ def find_best_match(user_question: str, questions: List[str], model: SentenceTra
     similarities = util.cos_sim(user_embedding, question_embeddings)
     best_match_idx = similarities.argmax().item()
     best_match_score = similarities[0][best_match_idx].item()
+    # Return the question only if it’s above a similarity threshold
     if best_match_score > 0.7:
         return questions[best_match_idx]
     return None
@@ -43,13 +52,24 @@ def get_answer(question: str, knowledge_base: Dict) -> Optional[str]:
             return q["answer"]
     return None
 
-# Initialize model and knowledge base at startup
+
+# Load the pre-trained SentenceTransformer model at startup
 model = SentenceTransformer('all-MiniLM-L6-v2')
+
+
 knowledge_base = load_knowledge('knowledge_base.json')
+
+
+@app.route('/')
+def serve_index():
+    """
+    Serve the index.html file so the user can load the chatbot UI
+    at the root URL (http://127.0.0.1:5000).
+    """
+    return send_from_directory('.', 'index.html')
 
 @app.route('/chat', methods=['POST'])
 def chat():
-    """Accepts JSON of the form: {"question": "some text"}"""
     data = request.get_json(force=True)
     user_input = data.get('question', '')
 
@@ -70,7 +90,6 @@ def chat():
 
 @app.route('/teach', methods=['POST'])
 def teach():
-    """Accepts JSON of the form: {"question": "some text", "answer": "some text"}"""
     data = request.get_json(force=True)
     user_question = data.get('question', '')
     user_answer = data.get('answer', '')
@@ -80,8 +99,9 @@ def teach():
     return jsonify({"response": "Got it. Thanks for teaching me!"})
 
 if __name__ == '__main__':
-    # If running in a standard environment with __file__ defined
+    # Adjust the working directory if necessary
     if '__file__' in globals():
         os.chdir(os.path.dirname(__file__))
 
+    # Run the Flask app
     app.run(debug=True)
