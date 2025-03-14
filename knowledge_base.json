@@ -1,41 +1,48 @@
 {
-    "questions": [
-      {
-        "question": "Hello",
-        "answer": "Hey there"
-      },
-      {
-        "question": "How are you?",
-        "answer": "Im am well, and you?"
-      },
-      {
-        "question": "I am doing good myself",
-        "answer": "I am glad to hear that"
-      },
-      {
-        "question": "I am doing bad",
-        "answer": "Oh no im sorry to hear that "
-      },
-      {
-        "question": "What is your name?",
-        "answer": "Aribot"
-      },
-      {
-        "question": "So how old are you Aribot?",
-        "answer": "Im zero years old"
-      },
-      {
-        "question": "What side of politics do you reside?",
-        "answer": "The far right obviously"
-      },
-      {
-        "question": "Hey",
-        "answer": "Hey there"
-      },
-      {
-        "question": "whats up",
-        "answer": "Just here to talk"
-      }
-    ]
-  }
- 
+  "questions": [
+    {
+      "question": "Hello",
+      "answer": "Hey there"
+    },
+    {
+      "question": "How are you?",
+      "answer": "Im am well, and you?"
+    },
+    {
+      "question": "I am doing good myself",
+      "answer": "I am glad to hear that"
+    },
+    {
+      "question": "I am doing bad",
+      "answer": "Oh no im sorry to hear that "
+    },
+    {
+      "question": "What is your name?",
+      "answer": "Aribot"
+    },
+    {
+      "question": "So how old are you Aribot?",
+      "answer": "Im zero years old"
+    },
+    {
+      "question": "What side of politics do you reside?",
+      "answer": "The far right obviously"
+    },
+    {
+      "question": "Hey",
+      "answer": "Hey there"
+    },
+    {
+      "question": "whats up",
+      "answer": "Just here to talk"
+    },
+    {
+      "question": "Im great",
+      "answer": "I'm very glad to hear that"
+    },
+    {
+      "question": "Im great",
+      "answer": "I'm very glad to hear that"
+    }
+  ]
+}
