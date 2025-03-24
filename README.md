@@ -1,12 +1,38 @@
-Overview
-This project is a minimalistic, Q&A-style chatbot that uses semantic similarity to answer user queries based on a local knowledge base. It relies on the SentenceTransformer library (using the all-MiniLM-L6-v2 model) to encode both user questions and stored knowledge entries into vector embeddings. When a user asks a question, the chatbot computes the similarity between the user’s query and existing questions in its knowledge base (a JSON file). If the similarity score exceeds a certain threshold (e.g., 0.7), the best-matching answer is returned immediately.
-If the user’s question does not match any stored entry with enough confidence, the chatbot indicates that it doesn’t understand and prompts the user to provide an answer. Once the user supplies an answer, the bot automatically appends this new Q/A pair to the JSON knowledge base, so it can respond correctly in the future. Over time, the chatbot “learns” from these interactions without needing a retraining step—its storage just keeps growing.
-You can interact with the chatbot in two primary ways:
+Q&A Chatbot
+This project is a lightweight chatbot that answers questions using semantic similarity with a local knowledge base. It's designed to be minimal, easy to use, and capable of learning from user input without needing retraining.
+
+Features
+Answers user queries by comparing them to stored questions using a transformer model (all-MiniLM-L6-v2)
+
+Stores question-answer pairs in a local JSON file
+
+Learns new answers dynamically when it doesn’t recognize a question
+
+Two ways to interact: through the command line or a simple web interface
+
+No database or retraining needed—just updates the JSON file as it learns
+
+How it Works
+The user asks a question.
+
+The chatbot encodes the question and compares it to existing entries in the knowledge base.
+
+If it finds a similar enough question (above a set threshold), it returns the matching answer.
+
+If no match is found, it asks the user to provide the answer.
+
+The new question and answer are added to the knowledge base for future use.
+
+Interfaces
 Command-Line Interface (CLI):
-Run main.py to chat directly in a terminal. If the bot is unable to answer a question, it will ask you to teach it right in the console.
-Web Frontend:
-A simple Flask server app.py and an HTML/JS interface index.html provide a minimal “GPT-style” web chat. Users can type queries, receive instant responses, and teach the bot if needed. Once the new answer is saved, the bot can respond correctly to that query in the future.
-This design makes the chatbot both light and extensible:
-Lightweight: It stores data in a simple JSON file (knowledge_base.json) and uses a single transformer model for semantic search.
-Easily Extensible: You can change thresholds, refine how the bot matches questions, or expand the frontend/UI without overhauling the entire codebase.
-Dynamic: No complex retraining or database overhead—new entries are appended on the fly, which fosters quick experimentation and easy version control.
+Run the chatbot directly in the terminal. If it can't answer a question, it will ask you to teach it right there.
+
+Web Interface:
+A minimal web frontend using Flask and basic HTML/JavaScript. Type your questions in the browser and get instant responses. You can also teach the bot when it doesn't know the answer.
+
+Design Goals
+Lightweight: Uses a simple JSON file for storage and a single transformer model for matching.
+
+Extensible: Easy to adjust matching thresholds, improve logic, or build a better UI.
+
+Dynamic: Learns on the fly from user input—no need to retrain or manage a database.
